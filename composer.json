@@ -10,5 +10,13 @@
         "psr-4": {
             "CloudflareQueue\\": "src/"
         }
+    },
+    "minimum-stability": "stable",
+    "extra": {
+        "laravel": {
+            "providers": [
+                "CloudflareQueue\\ServiceProvider"
+            ]
+        }
     }
 }

@@ -2,7 +2,9 @@
 
 namespace CloudflareQueue;
 
-class ServiceProvider extends \Illuminate\Support\ServiceProvider
+use Illuminate\Support\ServiceProvider as BaseServiceProvider;
+
+class ServiceProvider extends BaseServiceProvider
 {
     public function register(): void
     {
