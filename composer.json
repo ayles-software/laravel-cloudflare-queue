@@ -1,0 +1,14 @@
+{
+    "name": "ayles-software/laravel-cloudflare-queue",
+    "description": "Cloudflare queue driver for laravel.",
+    "license": "MIT",
+    "require": {
+        "php": "^8.4",
+        "laravel/framework": "^12.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "CloudflareQueue\\": "src/"
+        }
+    }
+}
