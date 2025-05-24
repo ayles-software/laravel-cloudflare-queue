@@ -12,19 +12,19 @@ class CloudflareQueue extends Queue implements QueueContract, ClearableQueue
     {
     }
 
-    public function clear($queue)
+    public function clear($queue): bool
     {
         return $this->client->clear($queue);
     }
 
-    public function size($queue = null)
+    public function size($queue = null): int
     {
-        $response = $this->client->get($queue);
+        $response = $this->client->get($queue, 1);
 
         return $response['result']['message_backlog_count'] ?? 0;
     }
 
-    public function push($job, $data = '', $queue = null)
+    public function push($job, $data = '', $queue = null): mixed
     {
         return $this->enqueueUsing(
             $job,
@@ -37,24 +37,42 @@ class CloudflareQueue extends Queue implements QueueContract, ClearableQueue
         );
     }
 
-    public function pushRaw($payload, $queue = null, array $options = [])
+    public function pushRaw($payload, $queue = null, array $options = []): ?string
     {
         $this->client->send($payload, $queue, $options);
 
         return json_decode($payload, true)['id'] ?? null;
     }
 
-    public function later($delay, $job, $data = '', $queue = null)
+    public function later($delay, $job, $data = '', $queue = null): mixed
     {
-        // TODO: Implement later() method.
+        return $this->enqueueUsing(
+            $job,
+            $this->createPayload($job, $queue, $data, $delay),
+            $queue,
+            $delay,
+            function ($payload, $queue, $delay) {
+                return $this->pushRaw($payload, $queue, ['delay' => $this->secondsUntil($delay)]);
+            }
+        );
     }
 
-//    public function bulk($jobs, $data = '', $queue = null)
-//    {
-//        // todo
-//    }
+    public function bulk($jobs, $data = '', $queue = null): void
+    {
+        if (empty($jobs)) {
+            return;
+        }
 
-    public function pop($queue = null)
+        $payloads = [];
+
+        foreach ($jobs as $job) {
+            $payloads[] = $this->createPayload($job, $queue, $data);
+        }
+
+        $this->client->bulkSend($payloads, $queue);
+    }
+
+    public function pop($queue = null): ?CloudflareJob
     {
         $response = $this->client->get($queue);
         $messages = $response['result']['messages'] ?? [];
@@ -68,5 +86,7 @@ class CloudflareQueue extends Queue implements QueueContract, ClearableQueue
                 $queue
             );
         }
+
+        return null;
     }
 }

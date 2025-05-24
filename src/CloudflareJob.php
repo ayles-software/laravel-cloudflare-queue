@@ -22,7 +22,7 @@ class CloudflareJob extends Job implements JobContract
         $this->connectionName = $connectionName;
     }
 
-    public function delete()
+    public function delete(): void
     {
         parent::delete();
 
