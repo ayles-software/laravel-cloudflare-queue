@@ -29,24 +29,24 @@ class CloudflareJob extends Job implements JobContract
         $this->client->ack($this->job['lease_id']);
     }
 
-    public function release($delay = 0)
+    public function release($delay = 0): void
     {
         parent::release($delay);
 
         $this->client->retry($this->job['lease_id'], $delay);
     }
 
-    public function getJobId()
+    public function getJobId(): string
     {
         return $this->job['id'];
     }
 
-    public function getRawBody()
+    public function getRawBody(): string
     {
         return $this->job['body'];
     }
 
-    public function attempts()
+    public function attempts(): int
     {
         return $this->job['attempts'];
     }
