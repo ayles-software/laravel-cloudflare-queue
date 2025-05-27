@@ -5,6 +5,7 @@ namespace CloudflareQueue;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Queue\Job as JobContract;
 use Illuminate\Queue\Jobs\Job;
+use Illuminate\Queue\Jobs\JobName;
 
 class CloudflareJob extends Job implements JobContract
 {
@@ -14,8 +15,9 @@ class CloudflareJob extends Job implements JobContract
         Container $container,
         protected CloudflareClient $client,
         protected array $job,
+        protected array $config,
         $connectionName,
-        $queue
+        $queue,
     ) {
         $this->container = $container;
         $this->queue = $queue;
@@ -49,5 +51,31 @@ class CloudflareJob extends Job implements JobContract
     public function attempts(): int
     {
         return $this->job['attempts'];
+    }
+
+    public function fire()
+    {
+        $payload = $this->payload();
+
+        [$class, $method] = JobName::parse($payload['job']);
+
+        $this->instance = new $class($payload['data'] ?? []);
+        $this->instance->{$method}();
+    }
+
+    public function payload(): array
+    {
+        $payload = parent::payload();
+
+        if (! $this->config['raw']) {
+            return $payload;
+        }
+
+        return [
+            'job' => $this->config['handler'].'@handle',
+            'uuid' => $this->job['id'],
+            'id' => $this->job['id'],
+            'data' => $payload,
+        ];
     }
 }

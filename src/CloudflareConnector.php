@@ -9,7 +9,8 @@ class CloudflareConnector implements ConnectorInterface
     public function connect(array $config)
     {
         return new CloudflareQueue(
-            new CloudflareClient($config)
+            new CloudflareClient($config),
+            $config
         );
     }
 }

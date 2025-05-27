@@ -8,16 +8,11 @@ use Illuminate\Queue\Queue;
 
 class CloudflareQueue extends Queue implements QueueContract, ClearableQueue
 {
-    /**
-     * The number of messages to retrieve per request.
-     */
-    protected int $batchSize = 10;
-
-    public function __construct(private readonly CloudflareClient $client, array $config = [])
-    {
-        if (isset($config['batch_size']) && is_int($config['batch_size'])) {
-            $this->batchSize = $config['batch_size'];
-        }
+    public function __construct(
+        private readonly CloudflareClient $client,
+        private readonly array $config = [],
+    ) {
+        //
     }
 
     public function clear($queue): bool
@@ -82,25 +77,22 @@ class CloudflareQueue extends Queue implements QueueContract, ClearableQueue
 
     public function pop($queue = null): array|CloudflareJob|null
     {
-        $response = $this->client->get($queue, $this->batchSize);
-        $messages = $response['result']['messages'] ?? [];
+        $response = $this->client->get($queue);
 
-        if (count($messages) === 0) {
+        if (! isset($response['result']['messages'][0])) {
             return null;
         }
 
-        $jobs = [];
-
-        foreach ($messages as $message) {
-            $jobs[] = new CloudflareJob(
-                $this->container,
-                $this->client,
-                $message,
-                $this->connectionName,
-                $queue
-            );
-        }
-
-        return $jobs;
+        return new CloudflareJob(
+            $this->container,
+            $this->client,
+            $response['result']['messages'][0],
+            [
+                'raw' => $this->config['raw'] ?? false,
+                'handler' => $this->config['handler'] ?? null,
+            ],
+            $this->connectionName,
+            $queue
+        );
     }
 }
