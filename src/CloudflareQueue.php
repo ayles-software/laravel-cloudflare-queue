@@ -8,6 +8,9 @@ use Illuminate\Queue\Queue;
 
 class CloudflareQueue extends Queue implements QueueContract, ClearableQueue
 {
+    protected bool $currentCountSet = false;
+    protected int $currentCount = 0;
+
     public function __construct(
         private readonly CloudflareClient $client,
         private readonly array $config = [],
@@ -22,7 +25,11 @@ class CloudflareQueue extends Queue implements QueueContract, ClearableQueue
 
     public function size($queue = null): int
     {
-        $response = $this->client->get($queue, 1);
+        if ($this->currentCountSet) {
+            return $this->currentCount;
+        }
+
+        $response = $this->client->get($queue);
 
         return $response['result']['message_backlog_count'] ?? 0;
     }
@@ -78,6 +85,12 @@ class CloudflareQueue extends Queue implements QueueContract, ClearableQueue
     public function pop($queue = null): array|CloudflareJob|null
     {
         $response = $this->client->get($queue);
+
+        $this->currentCount = $response['result']['message_backlog_count'] ?? 0;
+
+        if (! $this->currentCountSet) {
+            $this->currentCountSet = true;
+        }
 
         if (! isset($response['result']['messages'][0])) {
             return null;

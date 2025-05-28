@@ -169,6 +169,10 @@ test('job release method calls client retry', function () {
             'lease_id' => 'test-lease-id',
             'attempts' => 1
         ],
+        [
+            'raw' => false,
+            'handler' => null
+        ],
         'cloudflare',
         null
     );

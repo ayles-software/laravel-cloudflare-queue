@@ -5,7 +5,6 @@ namespace CloudflareQueue;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Queue\Job as JobContract;
 use Illuminate\Queue\Jobs\Job;
-use Illuminate\Queue\Jobs\JobName;
 
 class CloudflareJob extends Job implements JobContract
 {
@@ -53,16 +52,6 @@ class CloudflareJob extends Job implements JobContract
         return $this->job['attempts'];
     }
 
-    public function fire()
-    {
-        $payload = $this->payload();
-
-        [$class, $method] = JobName::parse($payload['job']);
-
-        $this->instance = new $class($payload['data'] ?? []);
-        $this->instance->{$method}();
-    }
-
     public function payload(): array
     {
         $payload = parent::payload();
@@ -72,10 +61,14 @@ class CloudflareJob extends Job implements JobContract
         }
 
         return [
-            'job' => $this->config['handler'].'@handle',
-            'uuid' => $this->job['id'],
             'id' => $this->job['id'],
-            'data' => $payload,
+            'uuid' => $this->job['id'],
+            'displayName' => $this->config['handler'],
+            'job' => 'Illuminate\Queue\CallQueuedHandler@call',
+            'data' => [
+                'commandName' => $this->config['handler'],
+                'command' => serialize(new ($this->config['handler'])($payload ?? [])),
+            ],
         ];
     }
 }
