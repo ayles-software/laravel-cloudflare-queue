@@ -24,9 +24,9 @@ class ServiceProvider extends BaseServiceProvider
 
             if (isset($config['driver']) && $config['driver'] === 'cloudflare') {
                 return new CloudflareFailedJobProvider(
-                    $config['path'] ?? $app->storagePath('framework/cache/cloudflare-failed-jobs.json'),
-                    $config['limit'] ?? 100,
-                    fn () => $app['cache']->store('file')
+                    $app['db'],
+                    $config['database'] ?? $app['config']['database.default'],
+                    $config['table'] ?? 'cloudflare_failed_jobs'
                 );
             }
 
