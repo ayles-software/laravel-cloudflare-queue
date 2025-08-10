@@ -6,6 +6,13 @@ use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 
 class ServiceProvider extends BaseServiceProvider
 {
+    public function boot(): void
+    {
+        $this->publishes([
+            __DIR__.'/../database/migrations' => database_path('migrations'),
+        ], 'cloudflare-queue-migrations');
+    }
+
     public function register(): void
     {
         $this->app->afterResolving('queue', function ($queue) {

@@ -56,18 +56,18 @@ class CloudflareJob extends Job implements JobContract
     {
         $payload = parent::payload();
 
-        if (! $this->config['raw']) {
+        if (! $this->config['raw_handler']) {
             return $payload;
         }
 
         return [
             'id' => $this->job['id'],
             'uuid' => $this->job['id'],
-            'displayName' => $this->config['handler'],
+            'displayName' => $this->config['raw_handler'],
             'job' => 'Illuminate\Queue\CallQueuedHandler@call',
             'data' => [
-                'commandName' => $this->config['handler'],
-                'command' => serialize(new ($this->config['handler'])($payload ?? [])),
+                'commandName' => $this->config['raw_handler'],
+                'command' => serialize(new ($this->config['raw_handler'])($payload ?? [])),
             ],
         ];
     }

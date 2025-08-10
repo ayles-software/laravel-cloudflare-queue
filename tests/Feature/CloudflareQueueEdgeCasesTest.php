@@ -85,8 +85,7 @@ test('job release method calls client retry', function () {
             'attempts' => 1
         ],
         [
-            'raw' => false,
-            'handler' => null
+            'raw_handler' => null,
         ],
         'cloudflare',
         null
