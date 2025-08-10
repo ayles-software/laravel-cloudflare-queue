@@ -101,8 +101,7 @@ class CloudflareQueue extends Queue implements QueueContract, ClearableQueue
             $this->client,
             $response['result']['messages'][0],
             [
-                'raw' => $this->config['raw'] ?? false,
-                'handler' => $this->config['handler'] ?? null,
+                'raw_handler' => $this->config['raw_handler'] ?? null,
             ],
             $this->connectionName,
             $queue

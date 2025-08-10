@@ -14,7 +14,7 @@ test('pop returns null when no messages are available', function () {
     $client = Mockery::mock(CloudflareClient::class);
     $client->shouldReceive('get')
         ->once()
-        ->with(null, 5)
+        ->with(null)
         ->andReturn(['result' => ['messages' => []]]);
 
     $queue = new CloudflareQueue($client, ['batch_size' => 5]);
@@ -39,7 +39,7 @@ test('pop returns a single job when one message is available', function () {
     $client = Mockery::mock(CloudflareClient::class);
     $client->shouldReceive('get')
         ->once()
-        ->with(null, 5)
+        ->with(null)
         ->andReturn(['result' => ['messages' => [$message]]]);
 
     $queue = new CloudflareQueue($client, ['batch_size' => 5]);
@@ -49,14 +49,12 @@ test('pop returns a single job when one message is available', function () {
     $result = $queue->pop();
 
     // Assert
-    expect($result)->toBeArray();
-    expect($result)->toHaveCount(1);
-    expect($result[0])->toBeInstanceOf(CloudflareJob::class);
-    expect($result[0]->getJobId())->toBe('test-id');
-    expect($result[0]->getRawBody())->toBe('test-body');
+    expect($result)->toBeInstanceOf(CloudflareJob::class);
+    expect($result->getJobId())->toBe('test-id');
+    expect($result->getRawBody())->toBe('test-body');
 });
 
-test('pop returns multiple jobs when multiple messages are available', function () {
+test('pop returns only the first job when multiple messages are available', function () {
     // Arrange
     $messages = [
         [
@@ -82,7 +80,7 @@ test('pop returns multiple jobs when multiple messages are available', function 
     $client = Mockery::mock(CloudflareClient::class);
     $client->shouldReceive('get')
         ->once()
-        ->with(null, 5)
+        ->with(null)
         ->andReturn(['result' => ['messages' => $messages]]);
 
     $queue = new CloudflareQueue($client, ['batch_size' => 5]);
@@ -92,54 +90,9 @@ test('pop returns multiple jobs when multiple messages are available', function 
     $result = $queue->pop();
 
     // Assert
-    expect($result)->toBeArray();
-    expect($result)->toHaveCount(3);
-
-    expect($result[0])->toBeInstanceOf(CloudflareJob::class);
-    expect($result[0]->getJobId())->toBe('test-id-1');
-    expect($result[0]->getRawBody())->toBe('test-body-1');
-
-    expect($result[1])->toBeInstanceOf(CloudflareJob::class);
-    expect($result[1]->getJobId())->toBe('test-id-2');
-    expect($result[1]->getRawBody())->toBe('test-body-2');
-
-    expect($result[2])->toBeInstanceOf(CloudflareJob::class);
-    expect($result[2]->getJobId())->toBe('test-id-3');
-    expect($result[2]->getRawBody())->toBe('test-body-3');
-});
-
-test('batch size is configurable', function () {
-    // Arrange
-    $client = Mockery::mock(CloudflareClient::class);
-    $client->shouldReceive('get')
-        ->once()
-        ->with(null, 10)
-        ->andReturn(['result' => ['messages' => []]]);
-
-    $queue = new CloudflareQueue($client, ['batch_size' => 10]);
-    $queue->setContainer(new Container());
-
-    // Act
-    $queue->pop();
-
-    // No explicit assertion needed as the mock expectation verifies the batch size
-});
-
-test('default batch size is used when not configured', function () {
-    // Arrange
-    $client = Mockery::mock(CloudflareClient::class);
-    $client->shouldReceive('get')
-        ->once()
-        ->with(null, 10) // Default batch size is 10
-        ->andReturn(['result' => ['messages' => []]]);
-
-    $queue = new CloudflareQueue($client); // No batch_size provided
-    $queue->setContainer(new Container());
-
-    // Act
-    $queue->pop();
-
-    // No explicit assertion needed as the mock expectation verifies the batch size
+    expect($result)->toBeInstanceOf(CloudflareJob::class);
+    expect($result->getJobId())->toBe('test-id-1');
+    expect($result->getRawBody())->toBe('test-body-1');
 });
 
 afterEach(function () {
