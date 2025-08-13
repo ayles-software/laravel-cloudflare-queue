@@ -5,6 +5,7 @@ namespace CloudflareQueue;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Queue\Job as JobContract;
 use Illuminate\Queue\Jobs\Job;
+use Ramsey\Uuid\Uuid;
 
 class CloudflareJob extends Job implements JobContract
 {
@@ -44,7 +45,14 @@ class CloudflareJob extends Job implements JobContract
 
     public function getRawBody(): string
     {
-        return $this->job['body'];
+        if (! $this->config['raw_handler']) {
+            return $this->job['body'];
+        }
+
+        $payload = json_decode($this->job['body'], associative: true);
+        $payload['uuid'] = Uuid::uuid4();
+
+        return json_encode($payload);
     }
 
     public function attempts(): int

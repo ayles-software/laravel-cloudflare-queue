@@ -44,18 +44,17 @@ class WebhookEmailEvent implements ShouldQueue
 }
 ```
 
-## Migrations
+Example of pushing a raw CF job to a Queue using JS:
+```js
+export default {
+    async fetch(request, env, context) {
+        await env.MY_QUEUE.send({
+            food: "lemons", 
+        });
 
-This package includes a migration for the failed jobs table. To publish the migration:
-
-```bash
-php artisan vendor:publish --tag=cloudflare-queue-migrations
-```
-
-After publishing, run the migration:
-
-```bash
-php artisan migrate
+        return new Response('Ok');
+    }
+}
 ```
 
 ## Testing
