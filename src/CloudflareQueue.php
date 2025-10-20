@@ -13,7 +13,7 @@ class CloudflareQueue extends Queue implements QueueContract, ClearableQueue
 
     public function __construct(
         private readonly CloudflareClient $client,
-        private readonly array $config = [],
+        private readonly array $internalConfig = [],
     ) {
         //
     }
@@ -101,7 +101,7 @@ class CloudflareQueue extends Queue implements QueueContract, ClearableQueue
             $this->client,
             $response['result']['messages'][0],
             [
-                'raw_handler' => $this->config['raw_handler'] ?? null,
+                'raw_handler' => $this->internalConfig['raw_handler'] ?? null,
             ],
             $this->connectionName,
             $queue
