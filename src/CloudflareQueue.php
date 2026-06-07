@@ -34,6 +34,29 @@ class CloudflareQueue extends Queue implements QueueContract, ClearableQueue
         return $response['result']['message_backlog_count'] ?? 0;
     }
 
+    public function pendingSize($queue = null): int
+    {
+        return $this->size($queue);
+    }
+
+    public function delayedSize($queue = null): int
+    {
+        // Cloudflare does not report delayed messages separately from the backlog...
+        return 0;
+    }
+
+    public function reservedSize($queue = null): int
+    {
+        // Cloudflare does not report leased messages separately from the backlog...
+        return 0;
+    }
+
+    public function creationTimeOfOldestPendingJob($queue = null): ?int
+    {
+        // Not supported by Cloudflare...
+        return null;
+    }
+
     public function push($job, $data = '', $queue = null): mixed
     {
         return $this->enqueueUsing(

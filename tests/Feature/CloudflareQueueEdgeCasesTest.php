@@ -97,6 +97,46 @@ test('job release method calls client retry', function () {
     // Assert is handled by the mock expectations
 });
 
+test('queue pending size returns the backlog count', function () {
+    // Arrange
+    // Mock the client to return a specific message backlog count
+    $client = Mockery::mock(CloudflareClient::class);
+    $client->shouldReceive('get')
+        ->once()
+        ->with(null)
+        ->andReturn(['result' => ['message_backlog_count' => 7]]);
+
+    // Create the queue with our mocked client
+    $queue = new CloudflareQueue($client);
+
+    // Create a container mock
+    $container = Mockery::mock('Illuminate\Container\Container');
+    $container->shouldReceive('bound')->andReturn(true);
+    $container->shouldReceive('offsetGet')->andReturn(null);
+
+    $queue->setContainer($container);
+
+    // Act
+    $pendingSize = $queue->pendingSize();
+
+    // Assert
+    expect($pendingSize)->toBe(7);
+});
+
+test('queue inspection methods return defaults for metrics cloudflare does not expose', function () {
+    // Arrange
+    $client = Mockery::mock(CloudflareClient::class);
+    $client->shouldNotReceive('get');
+
+    // Create the queue with our mocked client
+    $queue = new CloudflareQueue($client);
+
+    // Act & Assert
+    expect($queue->delayedSize())->toBe(0)
+        ->and($queue->reservedSize())->toBe(0)
+        ->and($queue->creationTimeOfOldestPendingJob())->toBeNull();
+});
+
 afterEach(function () {
     Mockery::close();
 });

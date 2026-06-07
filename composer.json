@@ -7,7 +7,7 @@
         "laravel/framework": "^12.0|^13.0"
     },
     "require-dev": {
-        "pestphp/pest": "^3.8",
+        "pestphp/pest": "^4.0",
         "mockery/mockery": "^1.5"
     },
     "autoload": {
